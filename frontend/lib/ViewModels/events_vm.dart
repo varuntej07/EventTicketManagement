@@ -6,7 +6,7 @@ import '../services/api_service.dart';
 class EventsViewModel extends ChangeNotifier {
   // Private fields
   final ApiService _apiService = ApiService();    // Instance of ApiService for API calls to backend server
-  List<EventModel> _events = [];
+  List<EventModel> _events = [];          // List to store fetched events
   bool _isLoading = false;
   String? _errorMessage;
 

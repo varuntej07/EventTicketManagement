@@ -17,9 +17,8 @@ class EventCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -171,9 +170,7 @@ class EventCard extends StatelessWidget {
         Expanded(
           child: Text(
             event.venue.fullVenueInfo,
-            style: TextStyle(
-              color: Colors.grey[700],
-            ),
+            style: TextStyle(color: Colors.grey[700]),
             maxLines: 1,
           ),
         ),

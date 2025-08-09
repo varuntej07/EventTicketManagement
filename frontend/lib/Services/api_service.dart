@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../Models/ticket_type_model.dart';
 import '../models/event_model.dart';
+
+// Base URL for my local XAMPP server
+const String baseUrl = 'http://10.0.0.157/event_tickets_api';        // as im using my physical device to test the app had to use my local IP instead of localhost
 
 /// Service class to handle all API calls to the PHP backend
 class ApiService {
-  // Base URL for my local XAMPP server
-  static const String baseUrl = 'http://10.0.0.157/event_tickets_api';        // as im using my physical device to test the app had to use my local IP instead of localhost
 
   // API endpoint to get all events
   static const String eventsEndpoint = '$baseUrl/api/get_events.php';
@@ -46,6 +48,47 @@ class ApiService {
     } catch (e) {
       // any other exceptions, such as network or parsing errors
       throw Exception('Failed to fetch events: $e');
+    }
+  }
+
+  /// Fetch all ticket types for a specific eventId, returns a list of TicketTypeModel objects
+  Future<List<TicketTypeModel>> getTicketTypesForEvent(int eventId) async {
+    try {
+      // API endpoint URL with event ID parameter
+      final url = Uri.parse('$baseUrl/api/get_tickets.php?event_id=$eventId');
+
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw Exception('Please check your connection.');
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+
+        if (jsonResponse['success'] == true) {
+          // Extract ticket types data
+          final List<dynamic> ticketTypesJson = jsonResponse['data'] ?? [];
+
+          // Convert JSON to list of TicketTypeModel objects
+          return ticketTypesJson
+              .map((ticketJson) => TicketTypeModel.fromJson(ticketJson))
+              .toList();
+        } else {
+          throw Exception(jsonResponse['message'] ?? 'Failed to load ticket types');
+        }
+      } else {
+        throw Exception('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Re-throw the error to be handled by ViewModel
+      throw Exception('Error fetching ticket types: ${e.toString()}');
     }
   }
 }

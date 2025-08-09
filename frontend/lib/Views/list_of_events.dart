@@ -1,3 +1,4 @@
+import 'package:eventeny_ticketing/Views/ticket_selection_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../ViewModels/events_vm.dart';
@@ -31,16 +32,6 @@ class _EventsListScreenState extends State<EventsListScreen> {
         centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         elevation: 0,
-        actions: [
-          // Refresh button
-          IconButton(
-            onPressed: () {
-              context.read<EventsViewModel>().refreshEvents();
-            },
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh Events',
-          ),
-        ],
       ),
       body: Consumer<EventsViewModel>(
         builder: (context, eventsViewModel, child) {
@@ -81,7 +72,7 @@ class _EventsListScreenState extends State<EventsListScreen> {
   }
 
   /// Build error state widget
-  Widget _buildErrorState(String errorMessage, EventsViewModel viewModel) {
+  Widget _buildErrorState(String errorMessage, EventsViewModel eventsVM) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -107,7 +98,7 @@ class _EventsListScreenState extends State<EventsListScreen> {
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: () => viewModel.fetchEvents(),
+              onPressed: () => eventsVM.fetchEvents(),
               icon: const Icon(Icons.refresh),
               label: const Text('Try Again'),
               style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12)),
@@ -142,9 +133,9 @@ class _EventsListScreenState extends State<EventsListScreen> {
   }
 
   /// Build events list widget
-  Widget _buildEventsList(EventsViewModel viewModel) {
+  Widget _buildEventsList(EventsViewModel eventsVM) {
     return RefreshIndicator(
-      onRefresh: () => viewModel.refreshEvents(),
+      onRefresh: () => eventsVM.refreshEvents(),
       child: Column(
         children: [
           // Events count header
@@ -153,7 +144,7 @@ class _EventsListScreenState extends State<EventsListScreen> {
             padding: const EdgeInsets.all(16),
             color: Colors.grey[100],
             child: Text(
-              '${viewModel.eventsCount} ${viewModel.eventsCount == 1 ? 'Event' : 'Events'} Available',
+              '${eventsVM.eventsCount} ${eventsVM.eventsCount == 1 ? 'Event' : 'Events'} Available for you',
               style: const TextStyle(
                 fontWeight: FontWeight.w500,
                 color: Colors.grey,
@@ -164,31 +155,20 @@ class _EventsListScreenState extends State<EventsListScreen> {
           // Events list
           Expanded(
             child: ListView.builder(
-              itemCount: viewModel.events.length,
+              itemCount: eventsVM.events.length,
               padding: const EdgeInsets.only(bottom: 16),
               itemBuilder: (context, index) {
-                final event = viewModel.events[index];
+                final event = eventsVM.events[index];
                 return EventCard(
                   event: event,
                   onTap: () {
-                    // TODO: Navigate to event details screen
-                    _showEventDetails(event.name);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => TicketSelectionScreen(event: event))); // Navigate to ticket selection screen with the event
                   },
                 );
               },
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  /// Show event details
-  void _showEventDetails(String eventName) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Tapped on: $eventName'),
-        behavior: SnackBarBehavior.floating,
       ),
     );
   }
