@@ -6,7 +6,7 @@ import 'event_card.dart';
 
 /// Screen for selecting tickets for a specific event
 class TicketSelectionScreen extends StatefulWidget {
-  final EventModel event;
+  final EventModel event;       // Event for which tickets are being selected in the previous screen
 
   const TicketSelectionScreen({super.key, required this.event});
 
@@ -15,7 +15,7 @@ class TicketSelectionScreen extends StatefulWidget {
 }
 
 class _TicketSelectionScreenState extends State<TicketSelectionScreen> {
-  late TicketsViewModel _ticketsViewModel;
+  late TicketsViewModel _ticketsViewModel;    // late because it's initialized in initState
 
   @override
   void initState() {
@@ -23,7 +23,7 @@ class _TicketSelectionScreenState extends State<TicketSelectionScreen> {
     // Initialize ViewModel and fetch ticket types
     _ticketsViewModel = TicketsViewModel();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _ticketsViewModel.fetchTicketTypes(widget.event.id);  // Fetch ticket types for a specific event
+      _ticketsViewModel.fetchTicketTypes(widget.event.id);  // Fetch ticket types for a specific event, widget is passed in the constructor above
     });
   }
 
@@ -36,7 +36,7 @@ class _TicketSelectionScreenState extends State<TicketSelectionScreen> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
-      value: _ticketsViewModel,
+      value: _ticketsViewModel,     // using already initialized ViewModel in initState to share data between widgets
       child: Scaffold(
         backgroundColor: Colors.grey[50],
         appBar: AppBar(
@@ -44,8 +44,8 @@ class _TicketSelectionScreenState extends State<TicketSelectionScreen> {
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           elevation: 0,
         ),
-        body: Consumer<TicketsViewModel>(       // Consumer to listen to ViewModel changes
-          builder: (context, ticketsVM, child) {
+        body: Consumer<TicketsViewModel>(              // Consumer to listen to ViewModel changes
+          builder: (context, ticketsVM, child) {      // ticketsVM is the reference of TicketsViewModel above
             if (ticketsVM.isLoading) {
               return Center(child: CircularProgressIndicator());
             }
@@ -62,11 +62,11 @@ class _TicketSelectionScreenState extends State<TicketSelectionScreen> {
           },
         ),
         bottomNavigationBar: Consumer<TicketsViewModel>(
-          builder: (context, viewModel, child) {
-            if (!viewModel.hasTicketTypes || viewModel.isLoading) {
+          builder: (context, ticketsVM, child) {
+            if (!ticketsVM.hasTicketTypes || ticketsVM.isLoading) {
               return const SizedBox.shrink();
             }
-            return _buildBottomBar(viewModel);
+            return _buildBottomBar(ticketsVM);
           },
         ),
       ),
@@ -131,7 +131,7 @@ class _TicketSelectionScreenState extends State<TicketSelectionScreen> {
   Widget _buildContent(TicketsViewModel viewModel) {
     return Column(
       children: [
-        // Fixed custom EventCard at the top of the screen declared in event_card.dart
+        // Fixed custom EventCard at the top of the ticket selection screen declared in event_card.dart
         EventCard(event: widget.event, onTap: null),
 
         // Expanded to make the rest of the content scrollable
@@ -153,7 +153,7 @@ class _TicketSelectionScreenState extends State<TicketSelectionScreen> {
                   ),
                 ),
 
-                // Ticket types list (Early bird, GA, VIP) with quantity selector
+                // Ticket types list (Early bird, GA, VIP)
                 _buildTicketsList(viewModel),
 
                 const SizedBox(height: 20),
@@ -166,14 +166,14 @@ class _TicketSelectionScreenState extends State<TicketSelectionScreen> {
   }
 
   /// Build list of ticket types
-  Widget _buildTicketsList(TicketsViewModel viewModel) {
+  Widget _buildTicketsList(TicketsViewModel ticketsVM) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const BouncingScrollPhysics(),
-      itemCount: viewModel.selections.length,
+      itemCount: ticketsVM.selections.length,     // Number of ticket types available for the specific event (3 types if it has Early bird, GA, VIP ticket types)
       itemBuilder: (context, index) {
-        final selection = viewModel.selections[index];
-        return _buildTicketCard(selection, viewModel);
+        final selection = ticketsVM.selections[index];
+        return _buildTicketCard(selection, ticketsVM);
       },
     );
   }
