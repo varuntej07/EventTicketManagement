@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../Models/event_model.dart';
 import '../Models/ticket_type_model.dart';
-import '../models/event_model.dart';
 
 // Base URL for my local XAMPP server
 const String baseUrl = 'http://10.0.0.157/event_tickets_api';        // as im using my physical device to test the app had to use my local IP instead of localhost

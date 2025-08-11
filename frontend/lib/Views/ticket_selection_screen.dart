@@ -1,7 +1,8 @@
+import 'package:eventeny_ticketing/Views/order_review.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../ViewModels/tickets_vm.dart';
-import '../models/event_model.dart';
+import '../Models/event_model.dart';
 import 'event_card.dart';
 
 /// Screen for selecting tickets for a specific event
@@ -318,7 +319,7 @@ class _TicketSelectionScreenState extends State<TicketSelectionScreen> {
   }
 
   /// Build bottom bar with total and proceed button
-  Widget _buildBottomBar(TicketsViewModel viewModel) {
+  Widget _buildBottomBar(TicketsViewModel ticketsVM) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -335,19 +336,18 @@ class _TicketSelectionScreenState extends State<TicketSelectionScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Total summary
-            if (viewModel.hasSelectedTickets)
+            if (ticketsVM.hasSelectedTickets)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '${viewModel.totalTicketsSelected} ${viewModel.totalTicketsSelected == 1 ? 'Ticket' : 'Tickets'}',
-                      style: const TextStyle(fontSize: 16, color: Colors.black87),
+                      '${ticketsVM.totalTicketsSelected} ${ticketsVM.totalTicketsSelected == 1 ? 'Ticket' : 'Tickets'}',
+                      style: const TextStyle(fontSize: 18, color: Colors.black87),
                     ),
                     Text(
-                      'Total: ${viewModel.formattedTotalAmount}',
+                      'Total: ${ticketsVM.formattedTotalAmount}',
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
                     ),
                   ],
@@ -359,37 +359,37 @@ class _TicketSelectionScreenState extends State<TicketSelectionScreen> {
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
-                onPressed: viewModel.hasSelectedTickets
-                    ? () => _handleProceed(viewModel)
+                onPressed: ticketsVM.hasSelectedTickets
+                    ? () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => OrderReviewScreen(
+                        event: widget.event,                                    // passing same event object, in the constructor above, which we got from previous screen
+                        selectedTicketsSummary: ticketsVM.selectedTicketsSummary,     // selectedTicketsSummary is a list of maps with ticket details for checkout
+                        totalAmount: ticketsVM.totalAmount,
+                      ),
+                    ),
+                  );
+                }
                     : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   disabledBackgroundColor: Colors.grey[300],
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
                 ),
                 child: Text(
-                  'Proceed to Payment',
+                  'Select',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: viewModel.hasSelectedTickets ? Colors.white : Colors.grey[600],
+                    color: ticketsVM.hasSelectedTickets ? Colors.white : Colors.grey[600],
                   ),
                 ),
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  /// Handle proceed button tap
-  void _handleProceed(TicketsViewModel viewModel) {
-    // TODO: Navigate to payment screen by locking the tickets for 10 minutes
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Selected ${viewModel.totalTicketsSelected} tickets for ${viewModel.formattedTotalAmount}'),
-        backgroundColor: Colors.green,
       ),
     );
   }

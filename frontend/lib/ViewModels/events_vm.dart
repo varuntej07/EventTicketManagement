@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import '../models/event_model.dart';
+import '../Models/event_model.dart';
 import '../services/api_service.dart';
 
 /// ViewModel for managing events data and state
@@ -27,7 +27,7 @@ class EventsViewModel extends ChangeNotifier {
     _clearError();
 
     try {
-      final List<EventModel> fetchedEvents = await _apiService.fetchEvents();
+      final List<EventModel> fetchedEvents = (await _apiService.fetchEvents()).cast<EventModel>();
 
       // Update the events list with fetched data
       _events = fetchedEvents;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/event_model.dart';
+import '../Models/event_model.dart';
 
 /// Reusable EventCard widget to display event information in a card format
 class EventCard extends StatelessWidget {
