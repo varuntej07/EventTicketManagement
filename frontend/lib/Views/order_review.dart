@@ -1,3 +1,4 @@
+import 'package:eventeny_ticketing/Views/reservation_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../Models/event_model.dart';
@@ -118,7 +119,7 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
     );
   }
 
-  Widget _buildBottomBar(TicketsViewModel viewModel) {
+  Widget _buildBottomBar(TicketsViewModel ticketsVM) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -140,7 +141,7 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
-                onPressed: () => _handleProceed(viewModel),
+                onPressed: () => _handleProceed(),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   disabledBackgroundColor: Colors.grey[300],
@@ -162,7 +163,17 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
     );
   }
 
-  void _handleProceed(TicketsViewModel viewModel) {
-    // TODO: Navigate to payment screen by locking the tickets for 10 minutes
+  void _handleProceed() {
+    print('Selected Tickets Summary for reservation is: ${widget.selectedTicketsSummary}');
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReservationTestPage(
+          eventId: widget.event.id,                // Accessing event from widget (from the constructor)
+          items: widget.selectedTicketsSummary,   // list of maps with ticket summary
+        ),
+      ),
+    );
   }
 }

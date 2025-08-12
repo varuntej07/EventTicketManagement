@@ -55,10 +55,10 @@ class ApiService {
   Future<List<TicketTypeModel>> getTicketTypesForEvent(int eventId) async {
     try {
       // API endpoint URL with event ID parameter
-      final url = Uri.parse('$baseUrl/api/get_tickets.php?event_id=$eventId');
+      final getTicketTypesForEventEndpoint = Uri.parse('$baseUrl/api/get_tickets.php?event_id=$eventId');
 
       final response = await http.get(
-        url,
+        getTicketTypesForEventEndpoint,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -90,5 +90,62 @@ class ApiService {
       // Re-throw the error to be handled by ViewModel
       throw Exception('Error fetching ticket types: ${e.toString()}');
     }
+  }
+
+  Future<ReserveResponse> reserveTickets({
+    required String sessionId,
+    required int eventId,
+    required List<Map<String, dynamic>> items,
+  }) async {
+    final reserveTicketsEndpoint = Uri.parse("$baseUrl/api/reserve_tickets.php");
+    final res = await http.post(
+      reserveTicketsEndpoint,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "session_id": sessionId,
+        "event_id": eventId,
+        "items":items.map((m) => {
+          "ticket_type_id": m["ticket_type_id"] ?? m["ticketTypeId"],
+          "quantity": m["quantity"] ?? m["qty"] ?? m["selectedQuantity"],
+        }).toList(),
+      }),
+    );
+
+    final bodyText = res.body;
+    print('reserve ${res.statusCode} ${res.headers['content-type']} len=${bodyText.length}');
+
+
+    if (res.statusCode != 200) {
+      throw Exception('Reserve failed: HTTP ${res.statusCode}');
+    }
+    final body = jsonDecode(res.body);
+    if (body['success'] != true) {
+      throw Exception(body['message'] ?? 'Reservation failed');
+    }
+    return ReserveResponse.fromJson(body);
+  }
+}
+
+class ReserveResponse {
+  final bool success;
+  final String sessionId;
+  final int eventId;
+  final DateTime expiresAtUtc;
+  final List<dynamic> reservations;
+  ReserveResponse({
+    required this.success,
+    required this.sessionId,
+    required this.eventId,
+    required this.expiresAtUtc,
+    required this.reservations,
+  });
+  factory ReserveResponse.fromJson(Map<String, dynamic> j) {
+    return ReserveResponse(
+      success: j['success'] == true,
+      sessionId: j['session_id'],
+      eventId: j['event_id'],
+      expiresAtUtc: DateTime.parse(j['expires_at']).toUtc(),
+      reservations: j['reservations'] ?? const [],
+    );
   }
 }
