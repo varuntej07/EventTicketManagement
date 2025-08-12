@@ -124,6 +124,34 @@ class ApiService {
     }
     return ReserveResponse.fromJson(body);
   }
+
+  // POST request to purchase tickets when user confirms payment
+  Future<Map<String, dynamic>> purchaseTickets({
+    required String sessionId,
+    required int eventId,
+    String? email,
+    String? name,
+    String? phone,
+  }) async {
+    final url = Uri.parse('$baseUrl/api/purchase_tickets.php');
+    print('purchasing tickets with URL: $url, for body $sessionId, $eventId, $email, $name, $phone from reservation_screen.dart');
+    final res = await http.post(url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'session_id': sessionId,
+        'event_id': eventId,
+        'user_email': email,
+        'user_name': name,
+        'user_phone': phone,
+      }),
+    );
+    final body = jsonDecode(res.body);
+    print('Final purchase response body after decoding: $body');
+    if (res.statusCode != 200 || body['success'] != true) {
+      throw Exception(body['message'] ?? 'Purchase failed');
+    }
+    return body; // has order_id, event_id, total_amount, qr, title, venue, date_time, total_tickets
+  }
 }
 
 class ReserveResponse {

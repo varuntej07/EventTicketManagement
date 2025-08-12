@@ -105,7 +105,7 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
 
                         SizedBox(height: 36),
 
-                        Center(child:Text("Taxes and fees may apply", style: TextStyle(fontSize: 14, color: Colors.black54))),
+                        Center(child:Text("Taxes and fees may apply depending on billing address", style: TextStyle(fontSize: 14, color: Colors.black54))),
                       ],
                     ),
                   ),
@@ -172,6 +172,7 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
         builder: (_) => ReservationTestPage(
           eventId: widget.event.id,                // Accessing event from widget (from the constructor)
           items: widget.selectedTicketsSummary,   // list of maps with ticket summary
+          ticketsSummary : widget.selectedTicketsSummary,
         ),
       ),
     );

@@ -1,15 +1,18 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../Services/api_service.dart';
+import 'order_confirmation.dart';
 
 class ReservationTestPage extends StatefulWidget {
   final int eventId;
   final List<Map<String, dynamic>> items;
+  final List<Map<String, dynamic>> ticketsSummary;
 
   const ReservationTestPage({
     super.key,
     required this.eventId,
     required this.items,
+    required this.ticketsSummary,
   });
 
   @override
@@ -128,8 +131,6 @@ class _ReservationTestPageState extends State<ReservationTestPage> {
               Text(_error!, style: const TextStyle(color: Colors.red)),
             ],
 
-            const Spacer(),
-
             const Text('Complete payment before the hold expires', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
 
             // Digital countdown (shown only after we know server time)
@@ -140,14 +141,62 @@ class _ReservationTestPageState extends State<ReservationTestPage> {
 
             const Spacer(),
 
+            Text('Order Summary', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
+
+            SizedBox(height: 20),
+
+            // Selected tickets list with quantity and total price
+            ...widget.ticketsSummary.map((ticket) =>
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(child: Text(ticket['ticketName'] ?? "General Ticket", style: TextStyle(fontSize: 16))),
+                      Row(
+                        children: [
+                          Text('${ticket['quantity'] ?? 0}', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+                          Text(' X ', style: TextStyle(color: Colors.black54)),
+                          Text('\$${ticket['totalPrice'] ?? 0}', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+            ),
+
+            const Spacer(),
+
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _active
-                    ? () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Buying tickets now...')));
-                }
-                    : null,
+                onPressed: _active ? () async {
+                  try {
+                    final api = ApiService();
+                    final resp = await api.purchaseTickets(
+                      sessionId: _sessionId!,
+                      eventId: widget.eventId,
+                      // no email/name/phone to pass
+                    );
+                    Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => OrderConfirmationScreen(
+                              qrData: resp['qr'],
+                              eventId: resp['event_id'],
+                              title: resp['title'],
+                              venue: resp['venue'],
+                              dateTime: resp['date_time'],
+                              totalTickets: resp['total_tickets'],
+                            )
+                        )
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Purchase failed: $e')),
+                    );
+                  }
+                } : null,
                 child: const Text('Buy Now', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
             ),
