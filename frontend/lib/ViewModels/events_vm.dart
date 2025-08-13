@@ -4,7 +4,6 @@ import '../services/api_service.dart';
 
 /// ViewModel for managing events data and state
 class EventsViewModel extends ChangeNotifier {
-  // Private fields
   final ApiService _apiService = ApiService();    // Instance of ApiService for API calls to backend server
   List<EventModel> _events = [];          // List to store fetched events
   bool _isLoading = false;
@@ -22,7 +21,6 @@ class EventsViewModel extends ChangeNotifier {
 
   /// Fetch events from the API
   Future<void> fetchEvents() async {
-    // Set loading state to true and clear any previous errors
     _setLoading(true);
     _clearError();
 

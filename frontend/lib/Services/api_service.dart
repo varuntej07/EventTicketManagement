@@ -23,14 +23,11 @@ class ApiService {
         },
       );
 
-      // Check if the request was successful
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);     // Parse the JSON response
 
-        // Check if the API response indicates success
         if (jsonData['success'] == true) {
-          // Extract the events data from the response
-          final List<dynamic> eventsJson = jsonData['data'] ?? [];
+          final List<dynamic> eventsJson = jsonData['data'] ?? [];          // Extract the events data from the response
 
           // Converting JSON array to list of EventModel objects
           final List<EventModel> events = eventsJson
@@ -42,7 +39,6 @@ class ApiService {
           throw Exception('API Error: ${jsonData['message'] ?? 'Unknown error'}');    //  means API returned success: false
         }
       } else {
-        // HTTP request failed
         throw Exception('HTTP Error: ${response.statusCode} - ${response.reasonPhrase}');
       }
     } catch (e) {
@@ -110,10 +106,6 @@ class ApiService {
         }).toList(),
       }),
     );
-
-    final bodyText = res.body;
-    print('reserve ${res.statusCode} ${res.headers['content-type']} len=${bodyText.length}');
-
 
     if (res.statusCode != 200) {
       throw Exception('Reserve failed: HTTP ${res.statusCode}');

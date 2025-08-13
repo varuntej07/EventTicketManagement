@@ -64,12 +64,12 @@ class TicketTypeModel {
   bool get isAvailable => availableQuantity > soldQuantity;
 
   /// Get remaining tickets count
-  int get remainingTickets => availableQuantity - soldQuantity;
+  int get remainingTickets => availableQuantity;
 
   /// Format price for display
   String get formattedPrice => '\$${price.toStringAsFixed(2)}';
 
-  /// Check if ticket sales are currently active (for future use)
+  /// Check if ticket sales are currently active
   bool get isSaleActive {
     final now = DateTime.now();
     if (saleStartDate != null && now.isBefore(saleStartDate!)) {

@@ -30,24 +30,17 @@ class _EventsListScreenState extends State<EventsListScreen> {
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
         ),
         centerTitle: true,
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Colors.tealAccent,
         elevation: 0,
       ),
       body: Consumer<EventsViewModel>(
         builder: (context, eventsViewModel, child) {
-          if (eventsViewModel.isLoading) {
-            return _buildLoadingState();
-          }
+          if (eventsViewModel.isLoading) return _buildLoadingState();
 
-          if (eventsViewModel.hasError) {
-            return _buildErrorState(eventsViewModel.errorMessage!, eventsViewModel);
-          }
+          if (eventsViewModel.hasError) return _buildErrorState(eventsViewModel.errorMessage!, eventsViewModel);
 
-          if (!eventsViewModel.hasEvents) {
-            return _buildEmptyState();
-          }
+          if (!eventsViewModel.hasEvents) return _buildEmptyState();
 
-          // Show events list when data is available
           return _buildEventsList(eventsViewModel);
         },
       ),
@@ -62,10 +55,7 @@ class _EventsListScreenState extends State<EventsListScreen> {
         children: [
           CircularProgressIndicator(),
           SizedBox(height: 16),
-          Text(
-            'Loading events...',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
+          Text('Loading events...', style: TextStyle(fontSize: 16, color: Colors.grey)),
         ],
       ),
     );
@@ -155,7 +145,7 @@ class _EventsListScreenState extends State<EventsListScreen> {
           // Events list
           Expanded(
             child: ListView.builder(
-              itemCount: eventsVM.events.length,
+              itemCount: eventsVM.events.length,                // events is a list of EventModel objects from eventsVM
               padding: const EdgeInsets.only(bottom: 16),
               itemBuilder: (context, index) {
                 final event = eventsVM.events[index];

@@ -42,31 +42,25 @@ class _TicketSelectionScreenState extends State<TicketSelectionScreen> {
         backgroundColor: Colors.grey[50],
         appBar: AppBar(
           title: const Text('Select Tickets'),
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          backgroundColor: Colors.tealAccent,
           elevation: 0,
         ),
         body: Consumer<TicketsViewModel>(              // Consumer to listen to ViewModel changes
           builder: (context, ticketsVM, child) {      // ticketsVM is the reference of TicketsViewModel above
-            if (ticketsVM.isLoading) {
-              return Center(child: CircularProgressIndicator());
-            }
+            if (ticketsVM.isLoading) return Center(child: CircularProgressIndicator());
 
-            if (ticketsVM.hasError) {
-              return _buildErrorState(ticketsVM.errorMessage!);     // Any error message if caught in TicketsViewModel
-            }
+            // Any error message if caught in TicketsViewModel
+            if (ticketsVM.hasError) return _buildErrorState(ticketsVM.errorMessage!);
 
-            if (!ticketsVM.hasTicketTypes) {
-              return _buildEmptyState();                  // Empty state if no ticket types available for the event
-            }
+            // Empty state if no ticket types available for the event
+            if (!ticketsVM.hasTicketTypes) return _buildEmptyState();
 
             return _buildContent(ticketsVM);
           },
         ),
         bottomNavigationBar: Consumer<TicketsViewModel>(
           builder: (context, ticketsVM, child) {
-            if (!ticketsVM.hasTicketTypes || ticketsVM.isLoading) {
-              return const SizedBox.shrink();
-            }
+            if (!ticketsVM.hasTicketTypes || ticketsVM.isLoading) return const SizedBox.shrink();
             return _buildBottomBar(ticketsVM);
           },
         ),
@@ -146,11 +140,7 @@ class _TicketSelectionScreenState extends State<TicketSelectionScreen> {
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                   child: Text(
                     "Select Tickets",
-                    style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87
-                    ),
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
                   ),
                 ),
 
@@ -180,7 +170,7 @@ class _TicketSelectionScreenState extends State<TicketSelectionScreen> {
   }
 
   /// Custom helper ticket card widget responsible for displaying ticket type details and quantity selector
-  Widget _buildTicketCard(TicketSelectionModel selection, TicketsViewModel viewModel) {
+  Widget _buildTicketCard(TicketSelectionModel selection, TicketsViewModel ticketsVM) {
     final ticketType = selection.ticketType;
     final isAvailable = ticketType.isAvailable;
 
@@ -263,7 +253,7 @@ class _TicketSelectionScreenState extends State<TicketSelectionScreen> {
                   Text('Quantity:', style: TextStyle(fontSize: 14, color: Colors.grey[700])),
 
                   // Ticket quantity selector widget
-                  _buildQuantitySelector(selection, viewModel),
+                  _buildQuantitySelector(selection, ticketsVM),
                 ],
               ),
           ],
@@ -273,7 +263,7 @@ class _TicketSelectionScreenState extends State<TicketSelectionScreen> {
   }
 
   /// Helper ticket quantity selector widget with + and - buttons
-  Widget _buildQuantitySelector(TicketSelectionModel selection, TicketsViewModel viewModel) {
+  Widget _buildQuantitySelector(TicketSelectionModel selection, TicketsViewModel ticketsVM) {
     return Container(
       decoration: BoxDecoration(
           border: Border.all(color: Colors.grey[200]!),
@@ -285,7 +275,7 @@ class _TicketSelectionScreenState extends State<TicketSelectionScreen> {
           // Decrease button, disabled if quantity is 0
           IconButton(
             onPressed: selection.canDecrease
-                ? () => viewModel.decreaseQuantity(selection.ticketType.ticketTypeId)
+                ? () => ticketsVM.decreaseQuantity(selection.ticketType.ticketTypeId)
                 : null,
             icon: const Icon(Icons.remove),
             iconSize: 16,
@@ -306,7 +296,7 @@ class _TicketSelectionScreenState extends State<TicketSelectionScreen> {
           // Increase button
           IconButton(
             onPressed: selection.canIncrease
-                ? () => viewModel.increaseQuantity(selection.ticketType.ticketTypeId)
+                ? () => ticketsVM.increaseQuantity(selection.ticketType.ticketTypeId)
                 : null,
             icon: const Icon(Icons.add),
             iconSize: 16,

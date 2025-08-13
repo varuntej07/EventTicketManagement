@@ -32,7 +32,7 @@ class EventModel {
       description: json['description'] ?? '',
       date: json['date'] ?? '',
       time: json['time'] ?? '',
-      venue: Venue.fromJson(json['venue'] ?? {}),
+      venue: Venue.fromJson(json['venue'] ?? {}),     // venue is a Venue object with name and address
       imageUrl: json['imageUrl'] ?? '',
       capacity: json['capacity'] ?? 0,
       status: json['status'] ?? '',

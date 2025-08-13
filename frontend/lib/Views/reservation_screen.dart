@@ -143,22 +143,26 @@ class _ReservationTestPageState extends State<ReservationTestPage> {
 
             Text('Order Summary', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
 
+            const Divider(indent: 150, endIndent: 150),
+
             SizedBox(height: 20),
 
             // Selected tickets list with quantity and total price
             ...widget.ticketsSummary.map((ticket) =>
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Column(
                     children: [
-                      Expanded(child: Text(ticket['ticketName'] ?? "General Ticket", style: TextStyle(fontSize: 16))),
-                      Row(
-                        children: [
-                          Text('${ticket['quantity'] ?? 0}', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
-                          Text(' X ', style: TextStyle(color: Colors.black54)),
-                          Text('\$${ticket['totalPrice'] ?? 0}', style: TextStyle(fontWeight: FontWeight.bold)),
-                        ],
+                      Text(ticket['ticketName'] ?? "General Ticket", style: const TextStyle(fontSize: 18)),
+                      Text(
+                        '${ticket['quantity'] ?? 0} x \$${ticket['unitPrice'].toStringAsFixed(2) ?? 0}',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+
+                      const SizedBox(width: 20),
+
+                      Text('\$${ticket['totalPrice'].toStringAsFixed(2)}',
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green[700], fontSize: 18),
                       ),
                     ],
                   ),
@@ -178,6 +182,7 @@ class _ReservationTestPageState extends State<ReservationTestPage> {
                       eventId: widget.eventId,
                       // no email/name/phone to pass
                     );
+                    if (!context.mounted) return;
                     Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(

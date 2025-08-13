@@ -83,7 +83,7 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
                                     children: [
                                       Text('${ticket['quantity'] ?? 0}', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
                                       Text(' X ', style: TextStyle(color: Colors.black54)),
-                                      Text('\$${ticket['totalPrice'] ?? 0}', style: TextStyle(fontWeight: FontWeight.bold)),
+                                      Text('\$${ticket['unitPrice'].toStringAsFixed(2) ?? 0}', style: TextStyle(fontWeight: FontWeight.bold)),
                                     ],
                                   ),
                                 ],
@@ -164,8 +164,6 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
   }
 
   void _handleProceed() {
-    print('Selected Tickets Summary for reservation is: ${widget.selectedTicketsSummary}');
-
     Navigator.push(
       context,
       MaterialPageRoute(

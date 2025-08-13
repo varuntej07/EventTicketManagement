@@ -80,9 +80,7 @@ class EventCard extends StatelessWidget {
         child: Image.network(
           event.imageUrl,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return _buildImagePlaceholder();
-          },
+          errorBuilder: (context, error, stackTrace) =>  _buildImagePlaceholder(),
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
             return const Center(child: CircularProgressIndicator());
@@ -112,12 +110,7 @@ class EventCard extends StatelessWidget {
   Widget _buildEventName(BuildContext context) {
     return Text(
       event.name,
-      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-        fontWeight: FontWeight.bold,
-        color: Colors.black87,
-      ),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
+      style: TextStyle(color: Colors.grey[900], fontWeight: FontWeight.bold, fontSize: 20)
     );
   }
 
@@ -125,9 +118,7 @@ class EventCard extends StatelessWidget {
   Widget _buildEventDescription(BuildContext context) {
     return Text(
       event.description,
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-        color: Colors.grey[700],
-      ),
+      style: TextStyle(color: Colors.black54, fontWeight: FontWeight.w500),
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
     );

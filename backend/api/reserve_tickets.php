@@ -143,7 +143,8 @@ try {
     $ticketTypeId = $it['ticket_type_id']; $qty = $it['quantity'];
     $u = $ticketCatalog[$ticketTypeId]['price']; $t = $u*$qty;
     $insertReservationStmt->execute([
-        ':sid'=>$sessionId, ':eid'=>$eventId,
+        ':sid'=>$sessionId,
+        ':eid'=>$eventId,
         ':ticketTypeId'=>$ticketTypeId,
         ':qty'=>$qty,
         ':u'=>$u,
