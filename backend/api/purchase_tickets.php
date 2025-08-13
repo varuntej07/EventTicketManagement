@@ -8,13 +8,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
 require_once __DIR__ . '/../config/database.php';
 
-const TABLE_RES   = 'ticket_reservations';
+const TABLE_RES = 'ticket_reservations';
 const TABLE_TYPES = 'ticket_types';
 const TABLE_ORDERS = 'orders';        // table with user_name, event_id, total_amount, order_status, created_at..
-const TABLE_LINES  = 'order_items';   // table with order_id, ticket_type_id, quantity, unit_price columns
+const TABLE_LINES = 'order_items';   // table with order_id, ticket_type_id, quantity, unit_price columns
 
 // ticket_types columns
-const TT_ID    = 'ticket_type_id';
+const TT_ID = 'ticket_type_id';
 const TT_EVENT = 'event_id';
 const TT_AVAIL = 'available_quantity';
 
@@ -46,7 +46,15 @@ try {
   $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
   $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
+  $db->exec("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED");              // avoids dirty reads and repeatable reads
   $db->beginTransaction();
+
+  // Clean up expired reservations before checking
+  $db->prepare("
+        UPDATE ticket_reservations
+        SET status = 'expired'
+        WHERE status = 'reserved' AND expires_at <= NOW()
+  ")->execute();
 
   // 1) Lock this session' active holds so no one else can consume while we finish
   $qHolds = $db->prepare("

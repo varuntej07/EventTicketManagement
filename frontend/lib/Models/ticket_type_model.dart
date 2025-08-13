@@ -61,7 +61,7 @@ class TicketTypeModel {
   }
 
   /// Check if ticket is currently available for sale
-  bool get isAvailable => availableQuantity > soldQuantity;
+  bool get isAvailable => availableQuantity > 0;
 
   /// Get remaining tickets count
   int get remainingTickets => availableQuantity;

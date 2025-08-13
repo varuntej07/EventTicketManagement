@@ -39,12 +39,10 @@ try {
 
   $sessionId = trim((string)($input['session_id'] ?? ''));      // session_id is optional; generates only if missing
   if ($sessionId === '') $sessionId = gen_token();
-
-  // event_id and items are required from client
-  $eventId = $input['event_id'] ?? null;
+  $eventId = $input['event_id'] ?? null;        // event_id and items are required from client
   $items = $input['items'] ?? null;             //  Array of objects [{ticket_type_id, quantity}]
 
-  if (!is_numeric($eventId)) fail(400, 'event_id required');
+  if (!is_numeric($eventId)) fail(400, 'event_id should be numeric');
   if (!is_array($items) || !$items ) fail(400, 'items required');
 
   $requestedItems = [];
@@ -64,8 +62,9 @@ try {
   // Values to use in the transaction
   $eventId = (int)$eventId;
   $expiresAt = gmdate('Y-m-d H:i:s', time() + RESERVATION_HOLD_MINUTES*60);         // UTC timestamp + 2 minutes to hold
-  $userIp = $_SERVER['REMOTE_ADDR'] ?? null;                            // client IP address optional
+  $userIp = $_SERVER['REMOTE_ADDR'] ?? null;                                       // client IP address optional
 
+  $db->exec("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED");
   $db->beginTransaction();
 
   // 1. lock ticket type rows to serialize availability checks
@@ -82,7 +81,14 @@ try {
     TT_COL_ID, TT_COL_EVENT_ID, TT_COL_PRICE, TT_COL_AVAIL,
     TABLE_TICKET_TYPES,
     TT_COL_ID, $placeholders, TT_COL_EVENT_ID
-  );        // FOR UPDATE locks the rows so no one else can modify them
+  );        // 'FOR UPDATE' locks the rows so no one else can modify them
+
+  // Clean up expired reservations before checking
+  $db->prepare("
+      UPDATE ticket_reservations
+      SET status = 'expired'
+      WHERE status = 'reserved' AND expires_at <= NOW()
+  ")->execute();
 
   $stmt = $db->prepare($lockTicketTypesSql);
   $pos=1;
@@ -99,35 +105,40 @@ try {
     $ticketCatalog[(int)$r['id']] = ['price' => (float)$r['price'], 'avail' => (int)$r['avail']];
   }
 
-  // 2. count active (unexpired) holds that already exist
+  // 2. count all the tickets that are reserved for this event (not purchased)
   $sqlHeld = sprintf(
-    "SELECT ticket_type_id, COALESCE(SUM(quantity),0) AS qty
-       FROM %s
-      WHERE ticket_type_id IN (%s)
-        AND event_id = ?
-        AND status = 'reserved'
-        AND expires_at > UTC_TIMESTAMP()
-      GROUP BY ticket_type_id",
-    TABLE_RESERVATIONS, $placeholders
+      "SELECT ticket_type_id, COALESCE(SUM(quantity),0) AS qty
+         FROM %s
+        WHERE ticket_type_id IN (%s)
+          AND event_id = ?
+          AND status = 'reserved'
+          AND expires_at > UTC_TIMESTAMP()
+        GROUP BY ticket_type_id
+        FOR UPDATE",                        // locking these rows too preventing concurrent updates
+      TABLE_RESERVATIONS,
+      implode(',', array_fill(0, count($ttIds), '?'))
   );
 
   $stmt = $db->prepare($sqlHeld);
-  $pos=1; foreach ($ttIds as $v) $stmt->bindValue($pos++, $v, PDO::PARAM_INT);
-  $stmt->bindValue($pos, $eventId, PDO::PARAM_INT);
+  $pos = 1;
+  foreach ($ttIds as $v) $stmt->bindValue($pos++, $v, PDO::PARAM_INT);
+  $stmt->bindValue($pos, $eventId, PDO::PARAM_INT);                         // binds each ticket_type_id with the event_id
   $stmt->execute();
-  $heldByType = [];
-  foreach ($stmt->fetchAll() as $r) $heldByType[(int)$r['ticket_type_id']] = (int)$r['qty'];
 
-  // 3. availability check for each ticket type while rows are locked
-  $requestedQtyByType = [];
-  foreach ($requestedItems as $items) {
-     $requestedQtyByType[$items['ticket_type_id']] = ($requestedQtyByType[$items['ticket_type_id']] ?? 0) + $it['quantity'];
+  $heldByType = [];
+  foreach ($stmt->fetchAll() as $r) {
+      $heldByType[(int)$r['ticket_type_id']] = (int)$r['qty'];
   }
 
-  foreach ($requestedQtyByType as $ttId => $totalQty) {
-    if (!isset($ticketCatalog[$ttId])) { $db->rollBack(); fail(404,'ticket type not found'); }
-    $free = $ticketCatalog[$ttId]['avail'] - ($heldByType[$ttId] ?? 0);
-    if ($free < $totalQty) { $db->rollBack(); fail(409,'Not enough availability'); }
+  // 3. Check availability including active holds, core logic to prevent concurrent updates on last available ticket
+  foreach ($requestedItems as $item) {
+      $ttId = $item['ticket_type_id'];
+      $reqQty = $item['quantity'];
+      $free = $ticketCatalog[$ttId]['avail'] - ($heldByType[$ttId] ?? 0);           // Subtracting those active holds from the stock
+      if ($free < $reqQty) {
+          $db->rollBack();
+          fail(409, 'Not enough tickets (on hold or being sold)');
+      }
   }
 
   // 4. insert hold rows (one for each ticket type) with status 'reserved'
