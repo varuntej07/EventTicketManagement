@@ -6,11 +6,11 @@ header("Access-Control-Allow-Headers: Content-Type");
 header("Content-Type: application/json; charset=UTF-8");
 
 // Include database connection
-require_once '../config/database.php';
+require_once __DIR__ . '/../config/database.php';
 
 // Create database instance with the class declared in database.php and get database connection
 $database = new Database();
-$db = $database->getConnection();
+$db = $database->getConnection();               // creates and returns a PDO connection object
 
 // Check if database connection is successful
 if ($db === null) {
@@ -24,27 +24,12 @@ if ($db === null) {
 
 try {
     // SQL query to fetch all active events
-    $query = "SELECT
-                event_id,
-                event_name,
-                event_description,
-                event_date,
-                event_time,
-                venue_name,
-                venue_address,
-                event_image_url,
-                total_capacity,
-                status,
-                created_at
-              FROM events
-              WHERE status = 'active'
-              ORDER BY event_date ASC";
+    $query = "SELECT * FROM events WHERE status = 'active' ORDER BY event_date ASC";
 
-    // Prepare and execute the query
-    $stmt = $db->prepare($query);
+    $stmt = $db->prepare($query);                   // compiles the sql query first and returns a PDO statement object
     $stmt->execute();
 
-    // Fetch all events as associative array
+    // Fetch all events as associative array (keys are column names)
     $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Format the response data
@@ -77,8 +62,7 @@ try {
     ]);
 
 } catch(PDOException $exception) {
-    // Handle database errors
-    http_response_code(500);
+    http_response_code(500);            // database errors with messages sent to client if any
     echo json_encode([
         "success" => false,
         "message" => "Failed to retrieve events: " . $exception->getMessage()
