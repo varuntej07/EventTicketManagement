@@ -83,7 +83,6 @@ class ApiService {
         throw Exception('Server error: ${response.statusCode}');
       }
     } catch (e) {
-      // Re-throw the error to be handled by ViewModel
       throw Exception('Error fetching ticket types: ${e.toString()}');
     }
   }
@@ -138,7 +137,6 @@ class ApiService {
       }),
     );
     final body = jsonDecode(res.body);
-    print('Final purchase response body after decoding: $body');
     if (res.statusCode != 200 || body['success'] != true) {
       throw Exception(body['message'] ?? 'Purchase failed');
     }

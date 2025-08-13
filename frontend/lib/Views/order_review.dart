@@ -91,6 +91,17 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
                             ),
                         ),
 
+                        Padding(
+                          padding: const EdgeInsets.symmetric( horizontal: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Service Charges(18%):', style: TextStyle(fontSize: 12)),
+                              Text('\$${(widget.totalAmount * 0.18).toStringAsFixed(2)}', style: TextStyle(fontSize: 12, color: Colors.orange[700])),
+                            ],
+                          ),
+                        ),
+
                         Divider(),
 
                         // Total Amount
@@ -103,9 +114,9 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
                           ],
                         ),
 
-                        SizedBox(height: 36),
+                        SizedBox(height: 50),
 
-                        Center(child:Text("Taxes and fees may apply depending on billing address", style: TextStyle(fontSize: 14, color: Colors.black54))),
+                        Center(child:Text("Taxes apply depending on billing address", style: TextStyle(fontSize: 12, color: Colors.black54))),
                       ],
                     ),
                   ),
